@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zero Sufoco Financeiro</title>
+
+    <!-- MAV Code -->
+    <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-M7FNJJJ2');
+
+    // Criar inputs hidden no body
+    document.addEventListener('DOMContentLoaded', function() {
+      var accountInput = document.getElementById('accountID');
+      var accountPageInput = document.getElementById('accountPageID');
+      
+      // Valores dos inputs (você pode modificar estes valores)
+      var accountValue = '83392ec4-8e75-11f0-a2f4-db6a1e4d8240';
+      var accountPageValue = '7c367e9e-9f9e-11f0-a8a3-7712dd9ebcc8';
+      
+      if (!accountInput) {
+        var input1 = document.createElement('input');
+        input1.type = 'hidden';
+        input1.id = 'accountID';
+        input1.value = accountValue;
+        document.body.appendChild(input1);
+      }
+      
+      if (!accountPageInput) {
+        var input2 = document.createElement('input');
+        input2.type = 'hidden';
+        input2.id = 'accountPageID';
+        input2.value = accountPageValue;
+        document.body.appendChild(input2);
+      }
+    });
+    </script>
+    <!-- End MAV Code -->    
+  </head>
+  <body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

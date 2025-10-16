@@ -1,0 +1,38 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "csv-parse": "^6.1.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "papaparse": "^5.5.3",
+    "pg": "^8.16.3",
+    "pg-mem": "^3.0.5",
+    "pino": "^9.13.1",
+    "pino-http": "^9.0.0",
+    "xlsx": "^0.18.5",
+    "yahoo-finance2": "^2.13.3"
+  },
+  "devDependencies": {
+    "better-sqlite3": "^12.2.0",
+    "nodemon": "^3.1.10",
+    "pino-pretty": "^11.3.0"
+  }
+}

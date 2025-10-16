@@ -1,0 +1,104 @@
+const API = import.meta.env.VITE_API_URL ?? "/api";
+
+function authHeader() {
+  const raw = (localStorage.getItem("token") || "").trim();
+  return raw ? { Authorization: raw.startsWith("Bearer ") ? raw : `Bearer ${raw}` } : {};
+}
+
+async function fetchJSON(url, init = {}) {
+  const res = await fetch(url, { ...init, headers: { ...(init.headers || {}), ...authHeader() } });
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { const j = await res.json(); msg = j?.error || j?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+/**
+ * Monta o resumo do dashboard a partir de endpoints já existentes.
+ * Mantém exatamente os nomes que o hook usa: receitasMes, despesasMes, saldoMes, etc.
+ */
+export async function fetchDashboardResumo({ ano, mes, forma_pagamento_id = "ALL", limitUltimos = 10 }) {
+  const mm = String(mes).padStart(2, "0");
+
+  // 1) Resumo do ano -> pega o mês selecionado
+  let receitasMes = 0, despesasMes = 0, saldoMes = 0;
+  try {
+    const lista = await fetchJSON(`${API}/lancamentos/resumo-mensal?ano=${ano}`);
+    const item = Array.isArray(lista) ? lista.find(r => String(r?.mes) === mm) : null;
+    receitasMes = Number(item?.receita || 0);
+    despesasMes = Number(item?.despesa || 0);
+    saldoMes    = receitasMes - despesasMes;
+  } catch {}
+
+  // 2) Planejado vs Realizado (mês)
+  let planejadoVsRealizado = [];
+  try {
+    const arr = await fetchJSON(`${API}/planejamentos/resumo?ano=${ano}&mes=${mes}`);
+    planejadoVsRealizado = Array.isArray(arr) ? arr.map(r => ({
+      categoria: r.categoria ?? r.nome ?? "—",
+      planejado: Number(r.planejado || 0),
+      realizado: Number(r.realizado  || 0),
+    })) : [];
+  } catch {}
+
+  // 3) Gastos por categoria (mês)
+  let gastosPorCategoria = [];
+  try {
+    const arr = await fetchJSON(`${API}/lancamentos/despesas-por-categoria?ano=${ano}&mes=${mm}`);
+    gastosPorCategoria = Array.isArray(arr) ? arr : [];
+  } catch {}
+
+  // 4) Gastos por forma de pagamento (mês)
+  // Usa o mesmo endpoint do GraficoFormasPgto (já funcional) e adapta o shape para { forma, total }.
+  let gastosPorFormaPgto = [];
+  try {
+    const arr = await fetchJSON(`${API}/lancamentos/gastos-cartoes?ano=${ano}&mes=${mm}`);
+    gastosPorFormaPgto = Array.isArray(arr)
+      ? arr.map(item => ({
+          forma: item.forma ?? item.nome ?? '—',
+          total: Number(item.total ?? item.valor ?? 0),
+        }))
+      : [];
+  } catch {}
+
+  // 5) Pendentes do mês (opcional, só para cards)
+  let pendentesMes = 0;
+  try {
+    const r = await fetchJSON(`${API}/lancamentos/pendentes-mes?ano=${ano}&mes=${mm}`);
+    pendentesMes = Number(r?.total || 0);
+  } catch {}
+
+  // 6) Vencidos (opcional, só para cards)
+  let vencidos = 0;
+  try {
+    const v = await fetchJSON(`${API}/lancamentos/vencidos`);
+    vencidos = Array.isArray(v) ? v.length : Number(v?.total || 0);
+  } catch {}
+
+  // 7) Aportes do mês (se não houver endpoint, deixa 0)
+  let aportesPlanosMes = 0;
+  try {
+    // se existir algum endpoint de aportes, calcule aqui; senão, permanece 0
+  } catch {}
+
+  // 8) Últimos lançamentos (opcional para listas/paineis)
+  let ultimosLancamentos = [];
+  try {
+    // Ex.: se houver rota específica, use; senão, deixe vazio
+  } catch {}
+
+  return {
+    receitasMes,
+    despesasMes,
+    saldoMes,
+    aportesPlanosMes,
+    pendentesMes,
+    vencidos,
+    planejadoVsRealizado,
+    gastosPorCategoria,
+    gastosPorFormaPgto,
+    ultimosLancamentos,
+  };
+}

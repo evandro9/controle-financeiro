@@ -1,0 +1,61 @@
+.planejamento-container {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.categorias-planejamento {
+  flex: 1;
+}
+
+.item-categoria {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.nome {
+  width: 100px;
+}
+
+.barra {
+  flex: 1;
+  background-color: #eee;
+  height: 24px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.preenchido {
+  background-color: #00C49F;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.restante {
+  width: 100px;
+  text-align: right;
+}
+
+.grafico-pizza {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.centro-grafico {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+}
