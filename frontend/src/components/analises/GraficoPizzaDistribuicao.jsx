@@ -10,7 +10,13 @@ function GraficoPizzaDistribuicao({ ano, mesInicio, mesFim, categoria }) {
   const [dados, setDados] = useState([]);
   const [tipo, setTipo] = useState('pizza'); // 'pizza' | 'barras'
   const { darkMode } = useContext(ThemeContext);
-  const apiBase = import.meta.env.VITE_API_URL ?? "/api";
+  const apiBase = (() => {
+  const raw = (import.meta.env.VITE_API_URL || '').trim();
+  if (!raw) return '/api';                       // default seguro
+  if (/^https?:\/\//i.test(raw)) return raw.replace(/\/$/, ''); // URL absoluta
+  if (raw.startsWith('/')) return raw.replace(/\/$/, '');       // caminho relativo tipo "/api"
+  return '/api';
+})();
 
   useEffect(() => {
     const raw = (localStorage.getItem('token') || '').trim();

@@ -17,7 +17,14 @@ function GraficoLinhaCategorias({ ano, mesInicio, mesFim, categoria }) {
   const [hidden, setHidden] = useState(() => new Set());
   // Tooltip controlada pelo mouse (evita “pular” para o início no clique)
   const [tt, setTt] = useState(null); // { label, payload }
-  const apiBase = import.meta.env.VITE_API_URL ?? "/api";
+  const apiBase = (() => {
+  const raw = (import.meta.env.VITE_API_URL || '').trim();
+  if (!raw) return '/api';                       // default seguro
+  if (/^https?:\/\//i.test(raw)) return raw.replace(/\/$/, ''); // URL absoluta
+  if (raw.startsWith('/')) return raw.replace(/\/$/, '');       // caminho relativo tipo "/api"
+  return '/api';
+})();
+
   // Controle de flicker: só esconder tooltip após pequeno atraso
   const hideTtTimerRef = useRef(null);
   const lastLabelRef = useRef(null);
