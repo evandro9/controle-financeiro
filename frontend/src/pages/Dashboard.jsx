@@ -58,7 +58,7 @@ function Dashboard({ modoUso }) {
         <Route path="/investimentos" element={<InvestimentosResumo />} />
         <Route path="/planejamento" element={<Planejamento />} />
         <Route path="/lancamentos" element={<Lancamentos />} />
-        <Route path="/api/analises" element={<Analises />} />
+        <Route path="/analises" element={<Analises />} />
         <Route path="/meus-investimentos" element={<MeusInvestimentos />} />
         <Route path="/rebalanceamento" element={<Rebalanceamento />} />
         <Route path="/rentabilidade" element={<SimuladorInvestimentos />} />
