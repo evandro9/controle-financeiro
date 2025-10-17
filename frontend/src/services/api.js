@@ -1,15 +1,30 @@
 // frontend/src/services/api.js
 
 // =========================
-// Base URL da API (robusta)
+// Base URL da API (inteligente)
 // =========================
 const rawBase = (import.meta.env.VITE_API_BASE_URL || '').trim();
 
 function buildApiBase(b) {
-  if (!b) return '/api';                 // fallback p/ dev
-  let out = b.replace(/\/+$/, '');       // remove barra final
-  if (!/\/api$/i.test(out)) out += '/api'; // garante /api no fim
-  return out;
+  if (!b) return '/api'; // fallback p/ dev
+  const raw = b.replace(/\/+$/, ''); // tira barra no final
+
+  // Se já termina com /api, mantém
+  if (/\/api$/i.test(raw)) return raw;
+
+  // Se a base aponta para o MESMO host do frontend (Vercel/domínio do app),
+  // usamos /api porque o vercel.json faz o proxy.
+  // Se aponta para um host de backend (Render etc.), NÃO adicionamos /api.
+  try {
+    const u = new URL(raw, window.location.origin);
+    const host = u.hostname;
+    const isFrontendHost =
+      host === window.location.hostname || host.endsWith('.vercel.app');
+    return isFrontendHost ? `${raw}/api` : raw;
+  } catch {
+    // Se não deu pra parsear (caminho relativo), trata como frontend
+    return `${raw}/api`;
+  }
 }
 
 export const API_BASE = buildApiBase(rawBase);
