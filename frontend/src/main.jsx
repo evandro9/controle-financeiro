@@ -1,3 +1,5 @@
+import './services/apiProxyPatch'; // precisa ser o 1º import para interceptar tudo
+import './services/api'; // ativa o patch global do fetch
 import './dev-proxy-compat';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -5,7 +7,6 @@ import App from './App.jsx';
 import './index.css';
 import { TourProvider } from './context/TourProvider.jsx';
 import { PlanProvider } from './context/PlanContext.jsx';
-import './services/api'; // ativa o patch global do fetch
 
 // Resolve o ID do usuário a partir do token (JWT) ou do localStorage
 function getUserId() {
