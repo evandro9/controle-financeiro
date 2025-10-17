@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { Menu } from "lucide-react";
 import BannerDemo from "../BannerDemo";
 import BannerAssinatura from '../BannerAssinatura';
-import { initIdleLogout, registrarAtividade, setAccessToken } from '../../services/api';
+import { initIdleLogout, registrarAtividade, setAccessToken, API_BASE } from '../../services/api';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeContext } from "../../context/ThemeContext";
 
@@ -57,7 +57,7 @@ export default function AppShell({ sidebar, children, headerOverride, headerRigh
         const token = localStorage.getItem('token');
         if (!token) { setCheckingConsent(false); return; }
         setCheckingConsent(true);
-        const r = await fetch('/api/me', {
+        const r = await fetch(`${API_BASE}/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!r.ok) { setCheckingConsent(false); return; }
