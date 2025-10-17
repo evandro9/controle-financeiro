@@ -2,6 +2,8 @@ import './services/api'; // ativa o patch global do fetch
 import './dev-proxy-compat';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { installApiAuthFetch } from './services/fetchAuth';
+installApiAuthFetch();
 import App from './App.jsx';
 import './index.css';
 import { TourProvider } from './context/TourProvider.jsx';
