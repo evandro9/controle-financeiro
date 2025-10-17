@@ -1,5 +1,26 @@
-export const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
+// frontend/src/services/api.js
+
+// =========================
+// Base URL da API (robusta)
+// =========================
+const rawBase = (import.meta.env.VITE_API_BASE_URL || '').trim();
+
+function buildApiBase(b) {
+  if (!b) return '/api';                 // fallback p/ dev
+  let out = b.replace(/\/+$/, '');       // remove barra final
+  if (!/\/api$/i.test(out)) out += '/api'; // garante /api no fim
+  return out;
+}
+
+export const API_BASE = buildApiBase(rawBase);
 const API_URL = API_BASE;
+
+if (!rawBase) {
+  console.warn(
+    '[API] VITE_API_BASE_URL não definido; usando fallback relativo "/api". ' +
+    'Em produção isso chama o domínio do frontend e pode causar 405.'
+  );
+}
 
 // =========================
 // Sessão por INATIVIDADE
@@ -67,17 +88,25 @@ export function setAccessToken(token) {
 }
 
 export async function login(email, senha) {
-  const res = await fetch(`${API_URL}/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ email, senha })
-  });
+  let res;
+  try {
+    res = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha })
+    });
+  } catch (e) {
+    throw new Error('Falha de rede ao tentar logar. Verifique sua conexão.');
+  }
 
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || 'Erro no login');
+    // tenta ler mensagem da API; se falhar, joga uma genérica
+    let errorMsg = 'Erro no login';
+    try {
+      const error = await res.json();
+      errorMsg = error.error || error.message || errorMsg;
+    } catch {}
+    throw new Error(errorMsg);
   }
 
   return res.json();
