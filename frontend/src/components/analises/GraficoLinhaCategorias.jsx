@@ -17,7 +17,7 @@ function GraficoLinhaCategorias({ ano, mesInicio, mesFim, categoria }) {
   const [hidden, setHidden] = useState(() => new Set());
   // Tooltip controlada pelo mouse (evita “pular” para o início no clique)
   const [tt, setTt] = useState(null); // { label, payload }
-  const apiBase = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+  const apiBase = import.meta.env.VITE_API_URL ?? "/api";
   // Controle de flicker: só esconder tooltip após pequeno atraso
   const hideTtTimerRef = useRef(null);
   const lastLabelRef = useRef(null);

@@ -1,4 +1,3 @@
-import './services/apiProxyPatch'; // precisa ser o 1º import para interceptar tudo
 import './services/api'; // ativa o patch global do fetch
 import './dev-proxy-compat';
 import React from 'react';

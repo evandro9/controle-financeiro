@@ -9,7 +9,7 @@ function GraficoBarrasSubcategorias({ ano, mesInicio, mesFim, categoria }) {
   const [dados, setDados] = useState([]);
   const { darkMode } = useContext(ThemeContext);
   const [loading, setLoading] = useState(false);
-  const apiBase = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+  const apiBase = import.meta.env.VITE_API_URL ?? "/api";
 
   useEffect(() => {
     const raw = (localStorage.getItem('token') || '').trim();

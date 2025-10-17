@@ -1,9 +1,9 @@
-// Compat layer DEMO: reescreve http://localhost:3001 -> /api (fetch/axios)
+// Compat layer DEMO: reescreve /api -> /api (fetch/axios)
 // Só ativa em modo "demo", para não interferir no dev local padrão.
 if (import.meta.env.MODE === 'demo') {
   const LOCAL_HOSTS = [
-    'http://localhost:3001',
-    'https://localhost:3001',
+    '/api',
+    '/api',
     'http://127.0.0.1:3001',
     'https://127.0.0.1:3001',
   ];

@@ -148,7 +148,7 @@ export async function login(email, senha) {
     try {
       const url = typeof input === 'string' ? input : input?.url || '';
 
-      // 1) Corrige hardcodes para http://localhost:3001/...
+      // 1) Corrige hardcodes para /api/...
       if (/^https?:\/\/(localhost|127\.0\.0\.1):3001\//i.test(url)) {
         const rest = url.replace(/^https?:\/\/[^/]+/, ''); // mantém o path original
         const target = toApiUrl(rest.startsWith('/api') ? rest : rest);

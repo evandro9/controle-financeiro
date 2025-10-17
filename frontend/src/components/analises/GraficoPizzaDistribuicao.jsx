@@ -10,7 +10,7 @@ function GraficoPizzaDistribuicao({ ano, mesInicio, mesFim, categoria }) {
   const [dados, setDados] = useState([]);
   const [tipo, setTipo] = useState('pizza'); // 'pizza' | 'barras'
   const { darkMode } = useContext(ThemeContext);
-  const apiBase = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+  const apiBase = import.meta.env.VITE_API_URL ?? "/api";
 
   useEffect(() => {
     const raw = (localStorage.getItem('token') || '').trim();
