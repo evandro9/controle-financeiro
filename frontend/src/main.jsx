@@ -5,6 +5,7 @@ import App from './App.jsx';
 import './index.css';
 import { TourProvider } from './context/TourProvider.jsx';
 import { PlanProvider } from './context/PlanContext.jsx';
+import './services/api'; // ativa o patch global do fetch
 
 // Resolve o ID do usuário a partir do token (JWT) ou do localStorage
 function getUserId() {

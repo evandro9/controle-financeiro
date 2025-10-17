@@ -124,5 +124,57 @@ export async function login(email, senha) {
     throw new Error(errorMsg);
   }
 
+// ---- Compat Layer: corrige chamadas sem /api e localhost:3001 ----
+(function patchFetchForApiProxy() {
+  if (typeof window === 'undefined' || !window.fetch) return;
+  const origFetch = window.fetch;
+
+  const apiBases = [
+    API_BASE,                                    // base calculada (vercel com /api, render sem /api)
+    (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, ''), // raw base
+  ].filter(Boolean);
+
+  function toApiUrl(path) {
+    // Se API_BASE termina com /api e a rota já começar com /api, evitamos duplicar
+    const hasApiSuffix = /\/api$/i.test(API_BASE);
+    if (path.startsWith('/api')) {
+      return hasApiSuffix ? `${API_BASE}${path.slice(4)}` : `${API_BASE}${path}`;
+    }
+    // Rota sem /api (ex.: /analises/...): prefixa conforme API_BASE
+    return hasApiSuffix ? `${API_BASE}${path}` : `${API_BASE}${path}`;
+  }
+
+  window.fetch = (input, init) => {
+    try {
+      const url = typeof input === 'string' ? input : input?.url || '';
+
+      // 1) Corrige hardcodes para http://localhost:3001/...
+      if (/^https?:\/\/(localhost|127\.0\.0\.1):3001\//i.test(url)) {
+        const rest = url.replace(/^https?:\/\/[^/]+/, ''); // mantém o path original
+        const target = toApiUrl(rest.startsWith('/api') ? rest : rest);
+        return origFetch(target, init);
+      }
+
+      // 2) Corrige chamadas que começam sem /api mas são de API (ex.: /analises, /lancamentos, etc)
+      //    Você pode ampliar a lista conforme necessário.
+      const isApiNoPrefix = /^\/(analises|lancamentos|dashboard|investimentos|planos|planejamentos|patrimonio|proventos|regras|indices|importacoes|benchmarks|valores)/i.test(url);
+      if (isApiNoPrefix) {
+        const target = toApiUrl(url);
+        return origFetch(target, init);
+      }
+
+      // 3) Se já está usando a própria base da API (Render ou Vercel), mantém
+      if (apiBases.some((b) => b && url.startsWith(b))) {
+        return origFetch(input, init);
+      }
+
+      // Caso contrário, segue normal
+      return origFetch(input, init);
+    } catch {
+      return origFetch(input, init);
+    }
+  };
+})();
+
   return res.json();
 }
