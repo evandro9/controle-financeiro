@@ -93,7 +93,7 @@ export async function login(email, senha) {
     res = await fetch(`${API_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, senha })
+      body: JSON.stringify({ usuario: email, senha })
     });
   } catch (e) {
     throw new Error('Falha de rede ao tentar logar. Verifique sua conexão.');
