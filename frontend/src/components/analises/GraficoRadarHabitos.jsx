@@ -4,6 +4,7 @@ import {
 } from "recharts";
 import { ThemeContext } from "../../context/ThemeContext";
 import InfoTip from "../ui/InfoTip";
+import { apiFetch } from '../../services/http';
 
 /**
  * Radar de Hábitos de Gasto (por categoria)
@@ -39,8 +40,7 @@ export default function GraficoRadarHabitos({
 
   // endpoint mensal oficial do back (único mês)
   const endpointMensal = (m) =>
-    `${apiBase}/lancamentos/despesas-por-categoria?ano=${ano}&mes=${String(m).padStart(2,"0")}`;
-
+    `/lancamentos/despesas-por-categoria?ano=${ano}&mes=${String(m).padStart(2,"0")}`;
 
   useEffect(() => {
     let alive = true;
@@ -48,13 +48,9 @@ export default function GraficoRadarHabitos({
       try {
         setLoading(true);
         setErr(null);
-        const raw  = (localStorage.getItem("token") || '').trim();
-        const auth = raw.startsWith('Bearer ') ? raw : `Bearer ${raw}`;
         // Se o usuário passar 'endpoint' explicitamente, tenta ele como está (modo avançado)
         if (endpoint) {
-          const res = await fetch(endpoint, { headers: { Authorization: auth }});
-          if (!res.ok) throw new Error("endpoint custom falhou");
-          let arr = await res.json();
+          let arr = await apiFetch(endpoint);
           if (!Array.isArray(arr)) throw new Error("formato inesperado");
           arr = arr.map(it => ({
             categoria: it.categoria_nome ?? it.categoria ?? it.nome ?? "Categoria",
@@ -70,9 +66,7 @@ export default function GraficoRadarHabitos({
           const mapa = new Map();
           for (const m of range) {
             // usa a rota mensal oficial do back
-            const res = await fetch(endpointMensal(m), { headers: { Authorization: auth }});
-            if (!res.ok) continue;
-            const lista = await res.json();
+            const lista = await apiFetch(endpointMensal(m));
             const adaptada = (Array.isArray(lista) ? lista : []).map(it => ({
               categoria: it.categoria_nome ?? it.categoria ?? it.nome ?? "Categoria",
               valor: Number(it.total ?? it.valor ?? 0),
@@ -89,9 +83,7 @@ export default function GraficoRadarHabitos({
         // 1 mês só: tenta rota mensal oficial
         {
           const unicoMes = range[0] || mesInicio;
-          const res = await fetch(endpointMensal(unicoMes), { headers: { Authorization: auth }});
-          if (!res.ok) throw new Error("rota mensal falhou");
-          let arr = await res.json();
+          let arr = await apiFetch(endpointMensal(unicoMes));
           if (!Array.isArray(arr)) throw new Error("formato inesperado");
           arr = arr.map(it => ({
             categoria: it.categoria ?? it.categoria_nome ?? it.nome ?? "Categoria",
@@ -104,13 +96,11 @@ export default function GraficoRadarHabitos({
       } catch (e) {
         // Fallback robusto: agrega por categoria usando /lancamentos com limite alto
         try {
-          const token = localStorage.getItem("token");
           const meses = range.length ? range : [mesInicio];
           const mapa = new Map();
           for (const m of meses) {
-            const url = `${apiBase}/lancamentos?ano=${ano}&mes=${String(m).padStart(2,"0")}&limite=100000`;
-            const res2 = await fetch(url, { headers: { Authorization: auth }});
-            let arr2 = await res2.json();
+            const url = `/lancamentos?ano=${ano}&mes=${String(m).padStart(2,"0")}&limite=100000`;
+            let arr2 = await apiFetch(url);
             if (!Array.isArray(arr2)) arr2 = [];
             for (const it of arr2) {
               if ((it.tipo || "").toLowerCase() !== "despesa") continue;

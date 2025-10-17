@@ -1,4 +1,5 @@
 // src/components/analises/AnaliseRecorrenciaPeriodo.jsx
+import { apiFetch } from '../../services/http';
 import React, { useEffect, useState, useContext } from 'react';
 import { ThemeContext } from '../../context/ThemeContext';
 import { ChevronDown, Repeat, Activity, CreditCard, Info } from 'lucide-react';
@@ -76,21 +77,11 @@ export default function AnaliseRecorrencia() {
       setLoading(true);
       const token = localStorage.getItem('token');
       if (!token) { toast.error('Sessão expirada'); return; }
-      const url = new URL(`${apiBase}/analises/recorrencia-mensal`, window.location.origin);
-      url.searchParams.set('ano', String(ano));
-      url.searchParams.set('mes', String(mes));
-      url.searchParams.set('tipo', 'despesa'); // mantém o foco em despesas
 
       const raw = (localStorage.getItem('token') || '').trim();
       const auth = raw.startsWith('Bearer ') ? raw : `Bearer ${raw}`;
-      const res = await fetch(url.toString(), {
-        headers: {
-          Authorization: auth,
-          'Content-Type': 'application/json',
-        },
-      });
       if (!res.ok) throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
-      const json = await res.json();
+      const json = await apiFetch(`/analises/recorrencia-mensal?ano=${ano}&mes=${mes}&tipo=despesa`);
       setData(json);
     } catch (e) {
       console.error(e);
