@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { API_BASE } from "../services/api"; // 👈 usa a base inteligente (Vercel com /api, Render sem /api)
 
 const Ctx = createContext({ sub: null, ents: {}, loading: true });
 
@@ -25,7 +26,7 @@ export function PlanProvider({ children, authSignal }) {
       }
 
       try {
-        const base = import.meta.env.VITE_API_BASE_URL || "/api";
+        const base = API_BASE; // 👈 garante /api quando for Vercel
         const headers = {
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
