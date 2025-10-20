@@ -71,7 +71,8 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // ====== CORS configurável por ambiente ======
-const allowNgrok = String(process.env.CORS_ALLOW_NGROK || '').toLowerCase() === 'true';
+const allowNgrok   = String(process.env.CORS_ALLOW_NGROK   || '').toLowerCase() === 'true';
+const allowVercel  = String(process.env.CORS_ALLOW_VERCEL  || 'true').toLowerCase() === 'true'; // libera *.vercel.app (previews) 
 const explicitOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map(s => s.trim())
@@ -88,7 +89,8 @@ const corsOptions = {
       const isNgrok = allowNgrok && (
         host.endsWith('.ngrok.io') || host.endsWith('.ngrok-free.app')
       );
-      if (isExplicit || isNgrok) return cb(null, true);
+      const isVercel = allowVercel && host.endsWith('.vercel.app'); // ✅ previews da Vercel
+      if (isExplicit || isNgrok || isVercel) return cb(null, true);
     } catch (_) {}
     return cb(new Error('Not allowed by CORS'));
   },
@@ -98,6 +100,7 @@ const corsOptions = {
   credentials: false, // você usa Bearer; se um dia usar cookie de sessão, mude para true e ajuste CORS_ORIGINS
 };
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // ✅ garante preflight para qualquer rota
 app.use(auditoria());
 
 // ====== HTTPS obrigatório + HSTS (apenas em produção) ======
