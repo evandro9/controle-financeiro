@@ -65,7 +65,6 @@ export default function AnaliseRecorrencia() {
   const [loading, setLoading] = useState(false);
   // moeda padrão BRL
   const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
   const nomeMes = (m) => {
     const raw = new Date(0, m-1).toLocaleString('pt-BR', { month:'short' }).replace('.', '');
@@ -75,13 +74,8 @@ export default function AnaliseRecorrencia() {
   async function carregar() {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      if (!token) { toast.error('Sessão expirada'); return; }
-
-      const raw = (localStorage.getItem('token') || '').trim();
-      const auth = raw.startsWith('Bearer ') ? raw : `Bearer ${raw}`;
-      if (!res.ok) throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
-      const json = await apiFetch(`/analises/recorrencia-mensal?ano=${ano}&mes=${mes}&tipo=despesa`);
+      // token e base já são tratados em apiFetch()
+      const json = await apiFetch(`/analises/recorrencia-mensal?ano=${ano}&mes=${mes}&tipo=despesa`); 
       setData(json);
     } catch (e) {
       console.error(e);

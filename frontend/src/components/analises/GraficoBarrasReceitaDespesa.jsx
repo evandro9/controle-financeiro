@@ -13,22 +13,23 @@ function GraficoBarrasReceitaDespesa({ ano, mesInicio, mesFim }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const raw = (localStorage.getItem('token') || '').trim();
-    const auth = raw.startsWith('Bearer ') ? raw : `Bearer ${raw}`;
-    const ctrl = new AbortController();
-    setLoading(true); setDados([]);
-apiFetch(`/lancamentos/resumo-mensal?ano=${ano}`)
-  .then(data => {
-    setReceitaMensal(data.receitaMensal || {});
-    setDespesaMensal(data.despesaMensal || {});
-  })
-  .catch(() => {
-    setReceitaMensal({});
-    setDespesaMensal({});
-  })
-  .finally(() => setLoading(false));
-    return () => ctrl.abort();
-  }, [ano, apiBase]);
+    let alive = true;
+    setLoading(true);
+    setDados([]);
+    apiFetch(`/lancamentos/resumo-mensal?ano=${ano}`)
+      .then((data) => {
+        if (!alive) return;
+        // Aceita tanto array direto quanto {mensal:[...]}
+        const arr = Array.isArray(data) ? data : (Array.isArray(data?.mensal) ? data.mensal : []);
+        setDados(arr);
+      })
+      .catch((err) => {
+        console.error('Falha ao buscar resumo mensal:', err);
+        if (alive) setDados([]);
+      })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [ano]);
 
   // formato moeda abreviada
   const abreviarBRL = (n) => {
