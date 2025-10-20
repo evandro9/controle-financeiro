@@ -60,18 +60,20 @@ async function expireSubscriptions() {
   );
 }
 
+// Apaga APENAS os entitlements gerenciados pelo sistema
+// de quem não está 'active'. Mantém qualquer coisa 'manual'.
 async function removeEntitlementsForNonActive() {
-  // Remove entitlements de TUDO que não estiver active
   await q(
     `delete from entitlements
-      where user_id in (
-        select user_id from subscriptions where status <> 'active'
-      )`
+      where managed_by = 'system'
+        and user_id in (
+          select user_id from subscriptions where status <> 'active'
+        )`
   );
 }
 
 async function healEntitlementsForActive() {
-  // Reaplica entitlements para quem está active (idempotente: apaga e recria)
+  // Reaplica entitlements para quem está active (idempotente: apaga e recria SISTEMA)
   const r = await q(
     `select user_id, plan
        from subscriptions
@@ -80,12 +82,18 @@ async function healEntitlementsForActive() {
 
   for (const row of r.rows) {
     const ents = entitlementsFor(row.plan);
-    await q(`delete from entitlements where user_id=$1`, [row.user_id]);
+    // Zera somente os entitlements gerenciados pelo sistema
+    await q(
+      `delete from entitlements where user_id = $1 and managed_by = 'system'`,
+      [row.user_id]
+    );
     for (const [k, v] of Object.entries(ents)) {
       await q(
-        `insert into entitlements (user_id, feature_key, value)
-         values ($1,$2,$3)`,
-        [row.user_id, k, v]
+        `insert into entitlements (user_id, feature_key, value, managed_by)
+         values ($1,$2,$3,'system')
+         on conflict (user_id, feature_key)
+           do update set value = excluded.value, managed_by = 'system'`,
+        [row.user_id, k, String(v)]
       );
     }
   }
