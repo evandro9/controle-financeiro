@@ -1,3 +1,4 @@
+import { apiFetch } from '../../services/http';
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ThemeContext } from '../../context/ThemeContext';
@@ -87,11 +88,10 @@ function TabelaResumoAnalises({ ano, mesInicio, mesFim }) {
     url.searchParams.append('mesInicio', mesInicio);
     url.searchParams.append('mesFim', mesFim);
 
-    fetch(url.toString(), { headers: { Authorization: auth } })
-      .then(res => res.json())
-      .then(json => setDados(Array.isArray(json) ? json : []))
-      .catch(() => setDados([]))
-      .finally(() => setLoading(false));
+apiFetch(`/analises/tabela-resumo?ano=${ano}&mesInicio=${mesInicio}&mesFim=${mesFim}`)
+  .then(json => setDados(Array.isArray(json) ? json : []))
+  .catch(() => setDados([]))
+  .finally(() => setLoading(false));
   }, [ano, mesInicio, mesFim]);
 
  const nomeMes = (mes) => {

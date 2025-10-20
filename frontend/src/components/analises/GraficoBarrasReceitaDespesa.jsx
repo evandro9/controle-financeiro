@@ -1,3 +1,4 @@
+import { apiFetch } from '../../services/http';
 import React, { useEffect, useState, useContext, useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid
@@ -10,20 +11,22 @@ function GraficoBarrasReceitaDespesa({ ano, mesInicio, mesFim }) {
   const [dados, setDados] = useState([]);
   const [modo, setModo] = useState('mensal'); // 'mensal' | 'anual'
   const [loading, setLoading] = useState(false);
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
   useEffect(() => {
     const raw = (localStorage.getItem('token') || '').trim();
     const auth = raw.startsWith('Bearer ') ? raw : `Bearer ${raw}`;
     const ctrl = new AbortController();
     setLoading(true); setDados([]);
-    fetch(`${apiBase}/lancamentos/resumo-mensal?ano=${ano}`, {
-      headers: { Authorization: auth }, signal: ctrl.signal
-    })
-      .then(res => res.ok ? res.json() : Promise.reject())
-      .then(setDados)
-      .catch(() => setDados([]))
-      .finally(() => setLoading(false));
+apiFetch(`/lancamentos/resumo-mensal?ano=${ano}`)
+  .then(data => {
+    setReceitaMensal(data.receitaMensal || {});
+    setDespesaMensal(data.despesaMensal || {});
+  })
+  .catch(() => {
+    setReceitaMensal({});
+    setDespesaMensal({});
+  })
+  .finally(() => setLoading(false));
     return () => ctrl.abort();
   }, [ano, apiBase]);
 
