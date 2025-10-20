@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
-const { startDailyReconciler } = require('./jobs/scheduler');
 const cors = require('cors');
+const { startDailyReconciler } = require('./jobs/scheduler');
 const cookieParser = require('cookie-parser');
 const pinoHttp = require('pino-http');
 const logger = require('./utils/logger');
@@ -72,7 +72,8 @@ if (process.env.NODE_ENV === 'production') {
 
 // ====== CORS configurável por ambiente ======
 const allowNgrok   = String(process.env.CORS_ALLOW_NGROK   || '').toLowerCase() === 'true';
-const allowVercel  = String(process.env.CORS_ALLOW_VERCEL  || 'true').toLowerCase() === 'true'; // libera *.vercel.app (previews) 
+// libera *.vercel.app (previews) — true por padrão
+const allowVercel  = String(process.env.CORS_ALLOW_VERCEL  || 'true').toLowerCase() === 'true';
 const explicitOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map(s => s.trim())
@@ -97,10 +98,9 @@ const corsOptions = {
   // Permita só o necessário
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Authorization','Content-Type'],
-  credentials: false, // você usa Bearer; se um dia usar cookie de sessão, mude para true e ajuste CORS_ORIGINS
+  credentials: false, // usando Bearer; se migrar p/ cookie, troque para true e ajuste CORS_ORIGINS
 };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // ✅ garante preflight para qualquer rota
 app.use(auditoria());
 
 // ====== HTTPS obrigatório + HSTS (apenas em produção) ======
