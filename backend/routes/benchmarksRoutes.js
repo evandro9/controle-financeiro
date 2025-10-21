@@ -1,6 +1,26 @@
 const express = require('express');
 const router = express.Router();
 
+const safeArray = (v) => Array.isArray(v) ? v : [];
+
+// Helper para janelas por período
+function rangeFromPeriodo(periodo = 'ano') {
+  const today = new Date();
+  const end = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  let start;
+  if (periodo === '12m') {
+    start = new Date(end); start.setUTCDate(start.getUTCDate() - 365);
+  } else if (periodo === '24m') {
+    start = new Date(end); start.setUTCDate(start.getUTCDate() - 730);
+  } else if (periodo === 'inicio') {
+    start = new Date(Date.UTC(2000, 0, 1));
+  } else { // 'ano'
+    start = new Date(Date.UTC(end.getUTCFullYear(), 0, 1));
+  }
+  const toISO = (d) => d.toISOString().slice(0,10);
+  return { startISO: toISO(start), endISO: toISO(end) };
+}
+
 // Helper para janelas por período
 function rangeFromPeriodo(periodo = 'ano') {
   const today = new Date();
@@ -101,10 +121,12 @@ router.get('/ibov/:ano', async (req, res) => {
       saida = saida.slice(-24);
     }
 
-    res.json(saida);
+    // garante array
+    return res.json(safeArray(saida));
   } catch (err) {
-    console.error('Erro ao buscar IBOV:', err);
-    res.status(500).json({ error: 'Erro ao buscar IBOV' });
+    console.error('❌ Erro ao buscar IBOV:', err);
+    // Front espera SEMPRE um array; devolve vazio em vez de 500
+    return res.json([]);
   }
 });
 

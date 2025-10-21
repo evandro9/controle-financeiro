@@ -118,13 +118,19 @@ const GraficoRentabilidadeMensal = ({ ano, filtroExtra, periodo = 'ano' }) => {
             const [rent, ibov, cdi] = await Promise.all([
               fetch(`/api/investimentos/rentabilidade-mensal/${yy}${qs}`, {
                 headers: { Authorization: `Bearer ${token}` }
-              }).then(r => r.json()),
+              })
+                .then(r => (r.ok ? r.json() : { totalGeral: {} }))
+                .then(d => (d && typeof d === 'object' && d.totalGeral ? d : { totalGeral: {} })),
               fetch(`/api/benchmarks/ibov/${yy}${qs}`, {
                 headers: { Authorization: `Bearer ${token}` }
-              }).then(r => r.json()),
+              })
+                .then(r => (r.ok ? r.json() : []))
+                .then(d => (Array.isArray(d) ? d : [])),
               fetch(`/api/benchmarks/cdi/${yy}${qs}`, {
                 headers: { Authorization: `Bearer ${token}` }
-              }).then(r => r.json())
+              })
+                .then(r => (r.ok ? r.json() : []))
+                .then(d => (Array.isArray(d) ? d : [])),
             ]);
             console.log('[GRAF-MENSAL][RAW]', { ano: yy, periodo, rent_totalGeral: rent?.totalGeral, ibov, cdi });
             return { yy, rent, ibov, cdi };
