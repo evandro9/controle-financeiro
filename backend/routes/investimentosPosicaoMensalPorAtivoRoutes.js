@@ -5,6 +5,9 @@ const db = require('../database/db');
 const auth = require('../middleware/auth');
 const { normTituloTesouro, valorRFnaData } = require('../utils/invest-helpers');
 
+// Base absoluta para chamadas internas (ex.: https://controle-financeiro-qk03.onrender.com/api)
+const API_BASE = (process.env.API_PUBLIC_BASE || '').replace(/\/+$/, '');
+
 router.use(auth);
 const DBG = (...x)=>console.log('[POS-MES-ATV]', ...x);
 
@@ -57,8 +60,8 @@ async function ensureSelic(inicioISO, fimISO){
     [inicioISO, fimISO]
   );
   if (r.rowCount) return true;
-  try {
-    await fetch('/api/indices/selic/sync', {
+  if (API_BASE) try {
+    await fetch(`${API_BASE}/indices/selic/sync`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ inicio: inicioISO, fim: fimISO })
     });
@@ -71,8 +74,8 @@ async function ensureCDI(inicioISO, fimISO){
     [inicioISO, fimISO]
   );
   if (r.rowCount) return true;
-  try {
-    await fetch('/api/indices/cdi/sync', {
+  if (API_BASE) try {
+    await fetch(`${API_BASE}/indices/cdi/sync`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ inicio: inicioISO, fim: fimISO })
     });
@@ -126,18 +129,19 @@ async function fatorIPCAmais(rRealAA, di, df){
   return prod;
 }
 async function ensureTesouroPU(nome, inicioISO, fimISO) {
-  const hits = async (base) => {
-    const url = `${base}/tesouro/pu?nome=${encodeURIComponent(nome)}&inicio=${encodeURIComponent(inicioISO)}&fim=${encodeURIComponent(fimISO)}`;
+  const hits = async (baseAbs) => {
+    const url = `${baseAbs}/tesouro/pu?nome=${encodeURIComponent(nome)}&inicio=${encodeURIComponent(inicioISO)}&fim=${encodeURIComponent(fimISO)}`;
     const r = await fetch(url);
     try { const j = await r.json(); return (Array.isArray(j.items) && j.items.length) ? j.items : []; }
     catch { return []; }
   };
-  for (const base of ['/api/indices','/api']) {
-    const ok = await hits(base); if (ok.length) return true;
+  const bases = API_BASE ? [`${API_BASE}/indices`, `${API_BASE}`] : [];
+  for (const baseAbs of bases) {
+    const ok = await hits(baseAbs); if (ok.length) return true;
   }
-  for (const base of ['/api/indices','/api']) {
+  for (const baseAbs of bases) {
     try {
-      await fetch(`${base}/tesouro/pu/sync-auto`, {
+      await fetch(`${baseAbs}/tesouro/pu/sync-auto`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ inicio: inicioISO, fim: fimISO, nomes: [nome] })
       });

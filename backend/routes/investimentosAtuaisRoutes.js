@@ -171,7 +171,11 @@ console.log('[INV-ATUAIS] movimentacoes:', investimentos.length);
             if (fxv) px = px * fxv;
           }
         }
-        // Fallback: sem ticker/indexador → saldo por fluxo
+        // Se temos preço, usa marcação a mercado
+        if (px != null && Number.isFinite(px) && qtd > 0) {
+          valor = qtd * px;
+        }
+        // Fallback: sem ticker/preço → saldo por fluxo
         if (!valor || valor <= 0) {
           valor = (st.fluxos || []).reduce((acc, f) => acc + (Number(f.sinal || 0) * Math.abs(Number(f.valor_total) || 0)), 0);
         }
